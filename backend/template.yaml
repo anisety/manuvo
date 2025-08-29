@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  manuvo
+
+  Sample SAM Template for manuvo
+
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  GestureRecognitionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: handler.handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        Recognize:
+          Type: Api
+          Properties:
+            Path: /recognize
+            Method: post
+
+Outputs:
+  GestureRecognitionApi:
+    Description: "API Gateway endpoint URL for Prod stage for Gesture Recognition function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/recognize/"
+  GestureRecognitionFunction:
+    Description: "Gesture Recognition Lambda Function ARN"
+    Value: !GetAtt GestureRecognitionFunction.Arn
+  GestureRecognitionFunctionIamRole:
+    Description: "Implicit IAM Role created for Gesture Recognition function"
+    Value: !GetAtt GestureRecognitionFunctionRole.Arn
