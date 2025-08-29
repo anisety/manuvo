@@ -5,19 +5,13 @@ const App: React.FC = () => {
   const webcamRef = useRef<Webcam>(null);
   const [recognizedGesture, setRecognizedGesture] = useState<string>('...');
   const [feedback, setFeedback] = useState<string>('Point your hand at the camera');
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const capture = useCallback(async () => {
-    if (webcamRef.current) {
+  const captureAndRecognize = useCallback(async () => {
+    if (webcamRef.current && !isProcessing) {
       const imageSrc = webcamRef.current.getScreenshot();
       if (imageSrc) {
-        // In a real app, you'd send this to the backend
-        // For now, we'll simulate a response
-        const mockGesture = ['A', 'B', 'C', 'Hello', 'Thank you'][Math.floor(Math.random() * 5)];
-        setRecognizedGesture(mockGesture);
-        setFeedback('Good job!');
-        
-        // Example of how you might send to a backend
-        /*
+        setIsProcessing(true);
         try {
           const response = await fetch('http://localhost:5000/recognize', {
             method: 'POST',
@@ -26,42 +20,62 @@ const App: React.FC = () => {
             },
             body: JSON.stringify({ image: imageSrc }),
           });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
           const data = await response.json();
           setRecognizedGesture(data.gesture);
           setFeedback(`Confidence: ${data.confidence}`);
         } catch (error) {
           console.error("Error recognizing gesture:", error);
           setFeedback('Could not connect to server');
+        } finally {
+          setIsProcessing(false);
         }
-        */
       }
     }
-  }, [webcamRef]);
+  }, [webcamRef, isProcessing]);
 
-  // Automatically capture every 2 seconds
+  // Automatically capture every 500ms
   React.useEffect(() => {
     const interval = setInterval(() => {
-      capture();
-    }, 2000);
+      captureAndRecognize();
+    }, 500);
     return () => clearInterval(interval);
-  }, [capture]);
+  }, [captureAndRecognize]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold mb-4">Manuvo ASL Recognition</h1>
-      <div className="w-full max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+      <h1 className="text-4xl font-bold mb-4 text-gray-800">Manuvo - Real-Time ASL Recognition</h1>
+      <div className="w-full max-w-2xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
         <Webcam
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
           className="w-full"
+          videoConstraints={{
+            width: 1280,
+            height: 720,
+            facingMode: "user"
+          }}
         />
-        <div className="p-4">
-          <h2 className="text-2xl font-semibold">Real-time Feedback</h2>
-          <p className="text-lg mt-2">Recognized Gesture: <span className="font-bold text-blue-600">{recognizedGesture}</span></p>
-          <p className="text-md mt-1">Feedback: <span className="italic">{feedback}</span></p>
+        <div className="p-6 bg-gray-50">
+          <h2 className="text-2xl font-semibold text-gray-700">Real-time Feedback</h2>
+          <p className="text-xl mt-2">
+            Recognized Gesture: 
+            <span className="font-bold text-blue-600 ml-2">{recognizedGesture}</span>
+          </p>
+          <p className="text-md mt-1 text-gray-600">
+            Feedback: 
+            <span className="italic ml-2">{feedback}</span>
+          </p>
         </div>
       </div>
+      <footer className="mt-6 text-center text-gray-500">
+        <p>Powered by Mediapipe & React</p>
+      </footer>
     </div>
   );
 };

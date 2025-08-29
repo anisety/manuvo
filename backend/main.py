@@ -1,36 +1,43 @@
-from flask import Flask, jsonify
-# In a real implementation, you would use a library like OpenCV or TensorFlow
-# import cv2
-# import tensorflow as tf
-# import numpy as np
+from flask import Flask, request, jsonify
+from recognition.gesture_recognizer import GestureRecognizer
+import base64
+import numpy as np
+import cv2
 
 app = Flask(__name__)
-
-# Placeholder for loading a pre-trained model
-# model = tf.keras.models.load_model('path/to/your/model')
+recognizer = GestureRecognizer()
 
 @app.route('/recognize', methods=['POST'])
 def recognize_gesture():
     """
-    Endpoint to recognize a gesture from an image.
+    Endpoint to recognize a gesture from a base64 encoded image.
     """
-    # In a real application, you would receive image data in the request
-    # For example, from a file upload or a base64 encoded string
-    # file = request.files['image']
-    # image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_COLOR)
-    
-    # Placeholder for prediction logic
-    # processed_image = preprocess_image(image) # e.g., resize, normalize
-    # prediction = model.predict(processed_image)
-    # gesture = np.argmax(prediction)
-    
-    # For this starter, we'll return a mock response
+    data = request.get_json()
+    if 'image' not in data:
+        return jsonify({'error': 'No image data found'}), 400
+
+    # Decode the base64 image
+    try:
+        image_data = base64.b64decode(data['image'].split(',')[1])
+        nparr = np.frombuffer(image_data, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    except Exception as e:
+        return jsonify({'error': f'Error decoding image: {str(e)}'}), 400
+
+    if img is None:
+        return jsonify({'error': 'Could not decode image'}), 400
+
+    # Recognize the gesture
+    gesture, _ = recognizer.recognize(img)
+
+    # Return the result
     gesture_data = {
-        'gesture': 'A',
-        'confidence': 0.98
+        'gesture': gesture,
+        'confidence': 0.99  # Placeholder confidence
     }
     
     return jsonify(gesture_data)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=5000)
+
