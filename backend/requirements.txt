@@ -1,3 +1,5 @@
 # This file is used to install python dependencies for the backend.
 
 flask
+opencv-python
+numpy

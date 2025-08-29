@@ -60,7 +60,7 @@ Its core engine is built for **image recognition, AWS Lambda serverless processi
 ---
 
 ## 🛠️ Tech Stack
-- **Backend:** Python (Flask / FastAPI), TensorFlow / PyTorch, OpenCV  
+- **Backend:** Python (Flask / FastAPI), C, C++, TensorFlow / PyTorch, OpenCV  
 - **Frontend:** React + TailwindCSS (web) / React Native (mobile/iOS)  
 - **Serverless:** AWS Lambda for scalable gesture processing  
 - **Data:** S3 / DynamoDB for storing gestures, user progress  
@@ -85,6 +85,10 @@ Manuvo/
 │   ├── components/
 │   ├── screens/
 │   └── camera/         # Mobile camera integration for gesture recognition
+│
+│── native/             # High-performance C/C++ modules
+│   ├── c/
+│   └── cpp/
 │
 │── docs/               # Documentation + research notes
 │── tests/              # Unit & integration tests
